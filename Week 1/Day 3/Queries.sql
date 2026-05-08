@@ -77,7 +77,12 @@ WHERE e.enrollment_id IS NULL;
 
 SELECT s.student_name, e.enrollment_id, e.course_id
 FROM students s
-FULL OUTER JOIN enrollments e
+LEFT JOIN enrollments e
+ON s.student_id = e.student_id
+UNION
+SELECT s.student_name, e.enrollment_id, e.course_id
+FROM students s
+RIGHT JOIN enrollments e
 ON s.student_id = e.student_id;
 
 
@@ -101,7 +106,12 @@ WHERE e.course_id IS NULL;
 
 SELECT i.instructor_name, c.course_name
 FROM instructors i
-FULL OUTER JOIN courses c
+LEFT JOIN courses c
+ON i.instructor_id = c.instructor_id
+UNION
+SELECT i.instructor_name, c.course_name
+FROM instructors i
+RIGHT JOIN courses c
 ON i.instructor_id = c.instructor_id;
 
 
@@ -117,11 +127,23 @@ SELECT
     c.course_name,
     i.instructor_name
 FROM students s
-FULL OUTER JOIN enrollments e
+LEFT JOIN enrollments e
 ON s.student_id = e.student_id
-FULL OUTER JOIN courses c
+LEFT JOIN courses c
 ON e.course_id = c.course_id
-FULL OUTER JOIN instructors i
+LEFT JOIN instructors i
+ON c.instructor_id = i.instructor_id
+UNION
+SELECT 
+    s.student_name,
+    c.course_name,
+    i.instructor_name
+FROM students s
+RIGHT JOIN enrollments e
+ON s.student_id = e.student_id
+LEFT JOIN courses c
+ON e.course_id = c.course_id
+LEFT JOIN instructors i
 ON c.instructor_id = i.instructor_id;
 
 
