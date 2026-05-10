@@ -347,15 +347,16 @@ FROM (
 -- 24. Generate Numbers 1 to 10
 -- =====================================================
 
-WITH RECURSIVE numbers AS (
-    SELECT 1 AS num
-    UNION ALL
-    SELECT num + 1
-    FROM numbers
-    WHERE num < 10
-)
-SELECT *
-FROM numbers;
+SELECT 1 AS num 
+UNION SELECT 2
+UNION SELECT 3 
+UNION SELECT 4 
+UNION SELECT 5 
+UNION SELECT 6
+UNION SELECT 7 
+UNION SELECT 8 
+UNION SELECT 9 
+UNION SELECT 10;
 
 
 -- =====================================================
