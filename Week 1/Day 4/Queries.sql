@@ -363,28 +363,10 @@ UNION SELECT 10;
 -- 25. Recursive Employee Hierarchy
 -- =====================================================
 
-WITH RECURSIVE employee_hierarchy AS (
-    SELECT employee_id,
-           employee_name,
-           manager_id,
-           department,
-           1 AS level
-    FROM employees
-    WHERE manager_id IS NULL
-
-    UNION ALL
-
-    SELECT e.employee_id,
-           e.employee_name,
-           e.manager_id,
-           e.department,
-           eh.level + 1
-    FROM employees e
-    JOIN employee_hierarchy eh
-    ON e.manager_id = eh.employee_id
-)
-SELECT *
-FROM employee_hierarchy;
+SELECT employee_id, 
+employee_name, 
+manager_id 
+FROM employees;
 
 
 -- =====================================================
@@ -488,23 +470,43 @@ WHERE total_sales = (
 -- Monthly Sales Trends
 -- =====================================================
 
-WITH monthly_sales AS (
+SELECT 
+    monthly.month,
+    monthly.total_sales,
+
+    (
+        SELECT SUM(m2.total_sales)
+        FROM
+        (
+            SELECT DATE_FORMAT(order_date, '%Y-%m') AS month,
+                   SUM(total_amount) AS total_sales
+            FROM orders
+            GROUP BY DATE_FORMAT(order_date, '%Y-%m')
+        ) m2
+        WHERE m2.month <= monthly.month
+    ) AS running_total,
+
+    (
+        SELECT m3.total_sales
+        FROM
+        (
+            SELECT DATE_FORMAT(order_date, '%Y-%m') AS month,
+                   SUM(total_amount) AS total_sales
+            FROM orders
+            GROUP BY DATE_FORMAT(order_date, '%Y-%m')
+        ) m3
+        WHERE m3.month = DATE_FORMAT(
+            DATE_SUB(STR_TO_DATE(CONCAT(monthly.month, '-01'), '%Y-%m-%d'),
+            INTERVAL 1 MONTH),
+            '%Y-%m'
+        )
+    ) AS previous_month_sales
+
+FROM
+(
     SELECT DATE_FORMAT(order_date, '%Y-%m') AS month,
            SUM(total_amount) AS total_sales
     FROM orders
     GROUP BY DATE_FORMAT(order_date, '%Y-%m')
-)
-SELECT month,
-       total_sales,
-       SUM(total_sales) OVER(ORDER BY month) AS running_total,
-       LAG(total_sales) OVER(ORDER BY month) AS previous_month_sales,
-       ROUND(
-           (
-               (total_sales -
-               LAG(total_sales) OVER(ORDER BY month))
-               * 100.0
-           ) /
-           LAG(total_sales) OVER(ORDER BY month),
-           2
-       ) AS percentage_growth
-FROM monthly_sales;
+) monthly
+ORDER BY monthly.month;
