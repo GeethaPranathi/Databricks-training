@@ -165,20 +165,18 @@ FROM orders o1;
 -- 12. Moving Average of Last 3 Orders
 -- =====================================================
 
-SELECT o1.order_id,
-       o1.total_amount,
-       (
-         SELECT AVG(o2.total_amount)
-         FROM (
-              SELECT total_amount
-              FROM orders o3
-              WHERE o3.order_id <= o1.order_id
-              ORDER BY o3.order_id DESC
-              LIMIT 3
-         ) o2
-       ) AS moving_average
-FROM orders o1;
-
+SELECT 
+    o1.order_id,
+    o1.total_amount,
+    (
+        SELECT AVG(o2.total_amount)
+        FROM orders o2
+        WHERE o2.order_id BETWEEN
+              GREATEST(1, o1.order_id - 2)
+              AND o1.order_id
+    ) AS moving_average
+FROM orders o1
+ORDER BY o1.order_id;
 
 -- =====================================================
 -- 13. Divide Employees into Salary Quartiles
