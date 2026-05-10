@@ -1,333 +1,352 @@
 -- =====================================================
--- 1. ROW_NUMBER() ordered by salary descending
+-- 1. ROW_NUMBER() Equivalent
 -- =====================================================
 
-SELECT 
-    employee_name,
-    salary,
-    ROW_NUMBER() OVER(ORDER BY salary DESC) AS row_num
-FROM employees;
+SET @row_num = 0;
 
-
--- =====================================================
--- 2. RANK() employees by salary
--- =====================================================
-
-SELECT 
-    employee_name,
-    salary,
-    RANK() OVER(ORDER BY salary DESC) AS salary_rank
-FROM employees;
+SELECT employee_name,
+       salary,
+       (@row_num := @row_num + 1) AS row_num
+FROM employees
+ORDER BY salary DESC;
 
 
 -- =====================================================
--- 3. DENSE_RANK() employees by salary
+-- 2. RANK() Equivalent
 -- =====================================================
 
-SELECT 
-    employee_name,
-    salary,
-    DENSE_RANK() OVER(ORDER BY salary DESC) AS dense_rank
-FROM employees;
+SELECT e1.employee_name,
+       e1.salary,
+       (SELECT COUNT(DISTINCT e2.salary)
+        FROM employees e2
+        WHERE e2.salary > e1.salary) + 1 AS rank_num
+FROM employees e1
+ORDER BY salary DESC;
 
 
 -- =====================================================
--- 4. Top 3 highest-paid employees
+-- 3. DENSE_RANK() Equivalent
 -- =====================================================
 
-WITH ranked_employees AS (
-    SELECT 
-        employee_name,
-        salary,
-        ROW_NUMBER() OVER(ORDER BY salary DESC) AS rn
-    FROM employees
-)
+SELECT e1.employee_name,
+       e1.salary,
+       (SELECT COUNT(DISTINCT e2.salary)
+        FROM employees e2
+        WHERE e2.salary > e1.salary) + 1 AS dense_rank_num
+FROM employees e1
+ORDER BY salary DESC;
+
+
+-- =====================================================
+-- 4. Top 3 Highest Paid Employees
+-- =====================================================
+
+SELECT employee_name,
+       salary
+FROM employees
+ORDER BY salary DESC
+LIMIT 3;
+
+
+-- =====================================================
+-- 5. Rank Employees Within Each Department
+-- =====================================================
+
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary,
+       (SELECT COUNT(DISTINCT e2.salary)
+        FROM employees e2
+        WHERE e2.department = e1.department
+        AND e2.salary > e1.salary) + 1 AS dept_rank
+FROM employees e1
+ORDER BY department, salary DESC;
+
+
+-- =====================================================
+-- 6. Highest Salary in Each Department
+-- =====================================================
+
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary,
+       (SELECT MAX(e2.salary)
+        FROM employees e2
+        WHERE e2.department = e1.department) AS highest_salary
+FROM employees e1;
+
+
+-- =====================================================
+-- 7. Running Total of Order Amounts
+-- =====================================================
+
+SET @running_total = 0;
+
+SELECT order_id,
+       order_date,
+       total_amount,
+       (@running_total := @running_total + total_amount) AS running_total
+FROM orders
+ORDER BY order_date;
+
+
+-- =====================================================
+-- 8. Cumulative Sales Amount for Each Employee
+-- =====================================================
+
+SELECT o1.employee_id,
+       o1.order_id,
+       o1.total_amount,
+       (SELECT SUM(o2.total_amount)
+        FROM orders o2
+        WHERE o2.employee_id = o1.employee_id
+        AND o2.order_date <= o1.order_date) AS cumulative_sales
+FROM orders o1
+ORDER BY employee_id, order_date;
+
+
+-- =====================================================
+-- 9. Previous Order Amount
+-- =====================================================
+
+SELECT o1.customer_id,
+       o1.order_id,
+       o1.total_amount,
+       (
+         SELECT o2.total_amount
+         FROM orders o2
+         WHERE o2.customer_id = o1.customer_id
+         AND o2.order_date < o1.order_date
+         ORDER BY o2.order_date DESC
+         LIMIT 1
+       ) AS previous_order
+FROM orders o1;
+
+
+-- =====================================================
+-- 10. Next Order Amount
+-- =====================================================
+
+SELECT o1.customer_id,
+       o1.order_id,
+       o1.total_amount,
+       (
+         SELECT o2.total_amount
+         FROM orders o2
+         WHERE o2.customer_id = o1.customer_id
+         AND o2.order_date > o1.order_date
+         ORDER BY o2.order_date ASC
+         LIMIT 1
+       ) AS next_order
+FROM orders o1;
+
+
+-- =====================================================
+-- 11. Difference Between Current and Previous Order
+-- =====================================================
+
+SELECT o1.customer_id,
+       o1.order_id,
+       o1.total_amount,
+       o1.total_amount - IFNULL(
+         (
+           SELECT o2.total_amount
+           FROM orders o2
+           WHERE o2.customer_id = o1.customer_id
+           AND o2.order_date < o1.order_date
+           ORDER BY o2.order_date DESC
+           LIMIT 1
+         ),0
+       ) AS difference_amount
+FROM orders o1;
+
+
+-- =====================================================
+-- 12. Moving Average of Last 3 Orders
+-- =====================================================
+
+SELECT o1.order_id,
+       o1.total_amount,
+       (
+         SELECT AVG(o2.total_amount)
+         FROM (
+              SELECT total_amount
+              FROM orders o3
+              WHERE o3.order_id <= o1.order_id
+              ORDER BY o3.order_id DESC
+              LIMIT 3
+         ) o2
+       ) AS moving_average
+FROM orders o1;
+
+
+-- =====================================================
+-- 13. Divide Employees into Salary Quartiles
+-- =====================================================
+
+SET @row_num = 0;
+SET @total = (SELECT COUNT(*) FROM employees);
+
+SELECT employee_name,
+       salary,
+       CEIL((@row_num := @row_num + 1) * 4 / @total) AS quartile
+FROM employees
+ORDER BY salary DESC;
+
+
+-- =====================================================
+-- 14. First Order by Each Customer
+-- =====================================================
+
 SELECT *
-FROM ranked_employees
-WHERE rn <= 3;
+FROM orders o1
+WHERE order_date = (
+    SELECT MIN(order_date)
+    FROM orders o2
+    WHERE o2.customer_id = o1.customer_id
+);
 
 
 -- =====================================================
--- 5. Rank employees within each department
+-- 15. Latest Order by Each Customer
 -- =====================================================
 
-SELECT 
-    employee_name,
-    department,
-    salary,
-    RANK() OVER(PARTITION BY department ORDER BY salary DESC) AS dept_rank
-FROM employees;
-
-
--- =====================================================
--- 6. Highest salary in each department
--- =====================================================
-
-SELECT 
-    employee_name,
-    department,
-    salary,
-    MAX(salary) OVER(PARTITION BY department) AS highest_salary
-FROM employees;
-
-
--- =====================================================
--- 7. Running total of order amounts
--- =====================================================
-
-SELECT 
-    order_id,
-    order_date,
-    total_amount,
-    SUM(total_amount) OVER(ORDER BY order_date) AS running_total
-FROM orders;
-
-
--- =====================================================
--- 8. Cumulative sales amount for each employee
--- =====================================================
-
-SELECT 
-    employee_id,
-    order_id,
-    total_amount,
-    SUM(total_amount) OVER(
-        PARTITION BY employee_id
-        ORDER BY order_date
-    ) AS cumulative_sales
-FROM orders;
-
-
--- =====================================================
--- 9. Previous order amount using LAG()
--- =====================================================
-
-SELECT 
-    customer_id,
-    order_id,
-    total_amount,
-    LAG(total_amount) OVER(
-        PARTITION BY customer_id
-        ORDER BY order_date
-    ) AS previous_order
-FROM orders;
-
-
--- =====================================================
--- 10. Next order amount using LEAD()
--- =====================================================
-
-SELECT 
-    customer_id,
-    order_id,
-    total_amount,
-    LEAD(total_amount) OVER(
-        PARTITION BY customer_id
-        ORDER BY order_date
-    ) AS next_order
-FROM orders;
-
-
--- =====================================================
--- 11. Difference between current and previous order
--- =====================================================
-
-SELECT 
-    customer_id,
-    order_id,
-    total_amount,
-    total_amount - LAG(total_amount) OVER(
-        PARTITION BY customer_id
-        ORDER BY order_date
-    ) AS difference_amount
-FROM orders;
-
-
--- =====================================================
--- 12. Moving average of last 3 orders
--- =====================================================
-
-SELECT 
-    order_id,
-    order_date,
-    total_amount,
-    AVG(total_amount) OVER(
-        ORDER BY order_date
-        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
-    ) AS moving_avg
-FROM orders;
-
-
--- =====================================================
--- 13. Divide employees into salary quartiles
--- =====================================================
-
-SELECT 
-    employee_name,
-    salary,
-    NTILE(4) OVER(ORDER BY salary DESC) AS salary_quartile
-FROM employees;
-
-
--- =====================================================
--- 14. First order placed by each customer
--- =====================================================
-
-WITH first_orders AS (
-    SELECT *,
-           ROW_NUMBER() OVER(
-               PARTITION BY customer_id
-               ORDER BY order_date
-           ) AS rn
-    FROM orders
-)
 SELECT *
-FROM first_orders
-WHERE rn = 1;
+FROM orders o1
+WHERE order_date = (
+    SELECT MAX(order_date)
+    FROM orders o2
+    WHERE o2.customer_id = o1.customer_id
+);
 
 
 -- =====================================================
--- 15. Latest order placed by each customer
+-- 16. Employee Salaries with Department Average
 -- =====================================================
 
-WITH latest_orders AS (
-    SELECT *,
-           ROW_NUMBER() OVER(
-               PARTITION BY customer_id
-               ORDER BY order_date DESC
-           ) AS rn
-    FROM orders
-)
-SELECT *
-FROM latest_orders
-WHERE rn = 1;
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary,
+       (
+         SELECT AVG(e2.salary)
+         FROM employees e2
+         WHERE e2.department = e1.department
+       ) AS dept_avg_salary
+FROM employees e1;
 
 
 -- =====================================================
--- 16. Employee salaries with department average
+-- 17. Employees Earning Above Department Average
 -- =====================================================
 
-SELECT 
-    employee_name,
-    department,
-    salary,
-    AVG(salary) OVER(PARTITION BY department) AS dept_avg_salary
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary
+FROM employees e1
+WHERE e1.salary > (
+    SELECT AVG(e2.salary)
+    FROM employees e2
+    WHERE e2.department = e1.department
+);
+
+
+-- =====================================================
+-- 18. Department Payroll
+-- =====================================================
+
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary,
+       (
+         SELECT SUM(e2.salary)
+         FROM employees e2
+         WHERE e2.department = e1.department
+       ) AS department_payroll
+FROM employees e1;
+
+
+-- =====================================================
+-- 19. Salary Percentage Contribution
+-- =====================================================
+
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary,
+       ROUND(
+         e1.salary * 100 /
+         (
+           SELECT SUM(e2.salary)
+           FROM employees e2
+           WHERE e2.department = e1.department
+         ),2
+       ) AS percentage_contribution
+FROM employees e1;
+
+
+-- =====================================================
+-- 20. Total Number of Employees
+-- =====================================================
+
+SELECT employee_name,
+       department,
+       (SELECT COUNT(*) FROM employees) AS total_employees
 FROM employees;
 
 
 -- =====================================================
--- 17. Employees earning above department average
+-- 21. Total Sales Per Employee
 -- =====================================================
 
-WITH dept_avg AS (
-    SELECT 
-        employee_name,
-        department,
-        salary,
-        AVG(salary) OVER(PARTITION BY department) AS avg_salary
-    FROM employees
-)
-SELECT *
-FROM dept_avg
-WHERE salary > avg_salary;
+SELECT employee_id,
+       SUM(total_amount) AS total_sales
+FROM orders
+GROUP BY employee_id;
 
 
 -- =====================================================
--- 18. Department payroll using SUM() OVER
+-- 22. Employees with Sales Above Company Average
 -- =====================================================
 
-SELECT 
-    employee_name,
-    department,
-    salary,
-    SUM(salary) OVER(PARTITION BY department) AS department_payroll
-FROM employees;
-
-
--- =====================================================
--- 19. Percentage contribution of salary
--- =====================================================
-
-SELECT 
-    employee_name,
-    department,
-    salary,
-    ROUND(
-        (salary * 100.0) /
-        SUM(salary) OVER(PARTITION BY department),
-        2
-    ) AS salary_percentage
-FROM employees;
+SELECT employee_id,
+       SUM(total_amount) AS total_sales
+FROM orders
+GROUP BY employee_id
+HAVING total_sales > (
+    SELECT AVG(total_sales)
+    FROM (
+        SELECT SUM(total_amount) AS total_sales
+        FROM orders
+        GROUP BY employee_id
+    ) t
+);
 
 
 -- =====================================================
--- 20. Total employees alongside each row
+-- 23. Customer Spending and Ranking
 -- =====================================================
 
-SELECT 
-    employee_name,
-    department,
-    COUNT(*) OVER() AS total_employees
-FROM employees;
-
-
--- =====================================================
--- 21. CTE for total sales per employee
--- =====================================================
-
-WITH employee_sales AS (
-    SELECT 
-        employee_id,
-        SUM(total_amount) AS total_sales
-    FROM orders
-    GROUP BY employee_id
-)
-SELECT *
-FROM employee_sales;
-
-
--- =====================================================
--- 22. Employees whose sales exceed company average
--- =====================================================
-
-WITH employee_sales AS (
-    SELECT 
-        employee_id,
-        SUM(total_amount) AS total_sales
-    FROM orders
-    GROUP BY employee_id
-),
-company_avg AS (
-    SELECT AVG(total_sales) AS avg_sales
-    FROM employee_sales
-)
-SELECT *
-FROM employee_sales
-WHERE total_sales > (SELECT avg_sales FROM company_avg);
-
-
--- =====================================================
--- 23. Multiple CTEs for customer spending rankings
--- =====================================================
-
-WITH customer_spending AS (
-    SELECT 
-        customer_id,
-        SUM(total_amount) AS total_spent
+SELECT c1.customer_id,
+       c1.total_spending,
+       (
+         SELECT COUNT(DISTINCT c2.total_spending)
+         FROM (
+            SELECT customer_id,
+                   SUM(total_amount) AS total_spending
+            FROM orders
+            GROUP BY customer_id
+         ) c2
+         WHERE c2.total_spending > c1.total_spending
+       ) + 1 AS spending_rank
+FROM (
+    SELECT customer_id,
+           SUM(total_amount) AS total_spending
     FROM orders
     GROUP BY customer_id
-),
-customer_rankings AS (
-    SELECT *,
-           RANK() OVER(ORDER BY total_spent DESC) AS spending_rank
-    FROM customer_spending
-)
-SELECT *
-FROM customer_rankings;
+) c1;
 
 
 -- =====================================================
--- 24. Recursive CTE numbers 1 to 10
+-- 24. Generate Numbers 1 to 10
 -- =====================================================
 
 WITH RECURSIVE numbers AS (
@@ -342,27 +361,27 @@ FROM numbers;
 
 
 -- =====================================================
--- 25. Recursive employee hierarchy
+-- 25. Recursive Employee Hierarchy
 -- =====================================================
 
 WITH RECURSIVE employee_hierarchy AS (
-    SELECT 
-        employee_id,
-        employee_name,
-        manager_id,
-        department
+    SELECT employee_id,
+           employee_name,
+           manager_id,
+           department,
+           1 AS level
     FROM employees
     WHERE manager_id IS NULL
 
     UNION ALL
 
-    SELECT 
-        e.employee_id,
-        e.employee_name,
-        e.manager_id,
-        e.department
+    SELECT e.employee_id,
+           e.employee_name,
+           e.manager_id,
+           e.department,
+           eh.level + 1
     FROM employees e
-    INNER JOIN employee_hierarchy eh
+    JOIN employee_hierarchy eh
     ON e.manager_id = eh.employee_id
 )
 SELECT *
@@ -370,128 +389,123 @@ FROM employee_hierarchy;
 
 
 -- =====================================================
--- 26. Orders above average order amount
+-- 26. Orders Above Average Amount
 -- =====================================================
 
-WITH avg_orders AS (
-    SELECT AVG(total_amount) AS avg_amount
-    FROM orders
-)
 SELECT *
 FROM orders
 WHERE total_amount > (
-    SELECT avg_amount
-    FROM avg_orders
+    SELECT AVG(total_amount)
+    FROM orders
 );
 
 
 -- =====================================================
--- 27. Rank customers by total spending
+-- 27. Rank Customers by Total Spending
 -- =====================================================
 
-WITH customer_totals AS (
-    SELECT 
-        customer_id,
-        SUM(total_amount) AS total_spent
+SELECT c1.customer_id,
+       c1.total_spending,
+       (
+         SELECT COUNT(DISTINCT c2.total_spending)
+         FROM (
+            SELECT customer_id,
+                   SUM(total_amount) AS total_spending
+            FROM orders
+            GROUP BY customer_id
+         ) c2
+         WHERE c2.total_spending > c1.total_spending
+       ) + 1 AS spending_rank
+FROM (
+    SELECT customer_id,
+           SUM(total_amount) AS total_spending
     FROM orders
     GROUP BY customer_id
-)
-SELECT *,
-       RANK() OVER(ORDER BY total_spent DESC) AS spending_rank
-FROM customer_totals;
+) c1;
 
 
 -- =====================================================
--- 28. Second-highest salary in each department
+-- 28. Second Highest Salary in Each Department
 -- =====================================================
 
-WITH salary_rankings AS (
-    SELECT 
-        employee_name,
-        department,
-        salary,
-        DENSE_RANK() OVER(
-            PARTITION BY department
-            ORDER BY salary DESC
-        ) AS salary_rank
-    FROM employees
-)
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary
+FROM employees e1
+WHERE 1 = (
+    SELECT COUNT(DISTINCT e2.salary)
+    FROM employees e2
+    WHERE e2.department = e1.department
+    AND e2.salary > e1.salary
+);
+
+
+-- =====================================================
+-- 29. Difference Between Salary and Department Maximum
+-- =====================================================
+
+SELECT e1.employee_name,
+       e1.department,
+       e1.salary,
+       (
+         SELECT MAX(e2.salary)
+         FROM employees e2
+         WHERE e2.department = e1.department
+       ) - e1.salary AS salary_difference
+FROM employees e1;
+
+
+-- =====================================================
+-- 30. Top Performing Employee in Each Department
+-- =====================================================
+
 SELECT *
-FROM salary_rankings
-WHERE salary_rank = 2;
-
-
--- =====================================================
--- 29. Difference from department maximum salary
--- =====================================================
-
-SELECT 
-    employee_name,
-    department,
-    salary,
-    MAX(salary) OVER(PARTITION BY department) - salary
-        AS salary_difference
-FROM employees;
-
-
--- =====================================================
--- 30. Top-performing employee in each department
--- based on total sales
--- =====================================================
-
-WITH employee_sales AS (
-    SELECT 
-        e.employee_id,
-        e.employee_name,
-        e.department,
-        SUM(o.total_amount) AS total_sales
+FROM (
+    SELECT e.department,
+           e.employee_name,
+           SUM(o.total_amount) AS total_sales
     FROM employees e
     LEFT JOIN orders o
     ON e.employee_id = o.employee_id
-    GROUP BY e.employee_id, e.employee_name, e.department
-),
-ranked_sales AS (
-    SELECT *,
-           RANK() OVER(
-               PARTITION BY department
-               ORDER BY total_sales DESC
-           ) AS dept_rank
-    FROM employee_sales
-)
-SELECT *
-FROM ranked_sales
-WHERE dept_rank = 1;
+    GROUP BY e.department, e.employee_name
+) t1
+WHERE total_sales = (
+    SELECT MAX(total_sales)
+    FROM (
+        SELECT e.department,
+               e.employee_name,
+               SUM(o.total_amount) AS total_sales
+        FROM employees e
+        LEFT JOIN orders o
+        ON e.employee_id = o.employee_id
+        GROUP BY e.department, e.employee_name
+    ) t2
+    WHERE t1.department = t2.department
+);
 
 
 -- =====================================================
 -- BONUS CHALLENGE
--- Monthly sales trends
+-- Monthly Sales Trends
 -- =====================================================
 
 WITH monthly_sales AS (
-    SELECT 
-        DATE_FORMAT(order_date, '%Y-%m') AS month,
-        SUM(total_amount) AS monthly_total
+    SELECT DATE_FORMAT(order_date, '%Y-%m') AS month,
+           SUM(total_amount) AS total_sales
     FROM orders
     GROUP BY DATE_FORMAT(order_date, '%Y-%m')
-),
-sales_analysis AS (
-    SELECT 
-        month,
-        monthly_total,
-        SUM(monthly_total) OVER(
-            ORDER BY month
-        ) AS running_total,
-
-        LAG(monthly_total) OVER(
-            ORDER BY month
-        ) AS previous_month_sales
-    FROM monthly_sales
 )
-SELECT *,
+SELECT month,
+       total_sales,
+       SUM(total_sales) OVER(ORDER BY month) AS running_total,
+       LAG(total_sales) OVER(ORDER BY month) AS previous_month_sales,
        ROUND(
-           ((monthly_total - previous_month_sales) * 100.0)
-           / previous_month_sales,
+           (
+               (total_sales -
+               LAG(total_sales) OVER(ORDER BY month))
+               * 100.0
+           ) /
+           LAG(total_sales) OVER(ORDER BY month),
            2
        ) AS percentage_growth
-FROM sales_analysis;
+FROM monthly_sales;
