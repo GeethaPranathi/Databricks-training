@@ -159,4 +159,4 @@ Initially, understanding analytical SQL concepts such as Window Functions, PARTI
 
 # Conclusion
 
-Successfully completed Week 1 - Day 4 advanced SQL practice tasks and developed a strong understanding of analytical SQL concepts. This session significantly improved practical SQL querying skills and built a strong foundation for advanced database querying, reporting systems, data analytics, and data engineering workflows.
+Successfully completed Week 1 - Day 5 advanced SQL practice tasks and developed a strong understanding of analytical SQL concepts. This session significantly improved practical SQL querying skills and built a strong foundation for advanced database querying, reporting systems, data analytics, and data engineering workflows.
