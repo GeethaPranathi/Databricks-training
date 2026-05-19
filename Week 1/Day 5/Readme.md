@@ -1,46 +1,37 @@
 # Week 1 - Day 5
 
 ## Objective
-The objective of this session was to learn and practice advanced SQL concepts including Window Functions, Common Table Expressions (CTEs), Ranking Functions, Running Totals, Analytical Queries, and Recursive Queries. The session focused on performing advanced data analysis operations using SQL for reporting and business insights.
+The objective of this session was to learn and practice SQL Window Functions and ranking operations for analytical data processing. The focus was on understanding how SQL can perform advanced row-wise calculations, rankings, cumulative analysis, and comparison operations using employee and order datasets.
 
 ---
 
 # Tasks Completed
 
-- Created relational database tables:
-  - employees
-  - orders
+- Created and populated:
+  - employees table
+  - orders table
 
-- Inserted sample datasets into all tables
-
-- Practiced advanced SQL analytical queries
-
-- Implemented ranking functions:
+- Practiced ranking functions:
   - ROW_NUMBER()
   - RANK()
   - DENSE_RANK()
 
-- Worked with partitioning using:
-  - PARTITION BY
+- Retrieved top-performing employees using ranking queries
 
-- Practiced advanced calculations:
+- Implemented department-wise ranking using PARTITION BY
+
+- Calculated:
+  - Highest salary by department
   - Running totals
-  - Moving averages
   - Cumulative sales
-  - Salary contribution percentages
 
-- Used analytical functions:
+- Practiced analytical functions:
   - LAG()
   - LEAD()
-  - NTILE()
 
-- Practiced Common Table Expressions (CTEs)
+- Compared current and previous order amounts
 
-- Generated customer spending and employee sales reports
-
-- Practiced recursive query concepts
-
-- Verified query outputs for correctness
+- Verified outputs for correctness
 
 - Organized SQL scripts and documentation in GitHub repository structure
 
@@ -52,32 +43,31 @@ The objective of this session was to learn and practice advanced SQL concepts in
 - ROW_NUMBER()
 - RANK()
 - DENSE_RANK()
-- NTILE()
+
+## Analytical Functions
 - LAG()
 - LEAD()
 
-## Analytical SQL
-- Running Totals
-- Moving Average
-- Cumulative Sum
-- Salary Ranking
-- Department-wise Analysis
-
-## Partitioning
+## SQL Concepts
 - PARTITION BY
-- Department-based calculations
-- Customer-wise order analysis
+- ORDER BY
+- Running Totals
+- Cumulative Sum
 
-## Common Table Expressions (CTEs)
-- Basic CTEs
-- Multiple CTEs
-- Recursive CTEs
+---
 
-## Advanced SQL Operations
-- Salary comparisons
-- Ranking within groups
-- Percentage contribution calculations
-- Monthly sales trend analysis
+# Queries Practiced
+
+1. ROW_NUMBER by salary
+2. RANK by salary
+3. DENSE_RANK by salary
+4. Top 3 highest paid employees
+5. Rank employees within department
+6. Highest salary in each department
+7. Running total of orders
+8. Cumulative sales per employee
+9. Previous order amount using LAG
+10. Next order amount using LEAD
 
 ---
 
@@ -95,68 +85,32 @@ The objective of this session was to learn and practice advanced SQL concepts in
 
 ```text
 schema.sql        -> Table creation and sample data
-queries.sql       -> Advanced SQL practice queries
+queries.sql       -> SQL analytical queries
 outputs/          -> Query execution outputs
-README.md         -> Documentation for Day 4
+README.md         -> Documentation for Day 5
 ```
 
 ---
 
 # Learning Outcomes
 
-Through this practice session, I:
+Through this session, I:
 
-- Understood advanced SQL analytical concepts
-- Learned how window functions work
-- Practiced ranking and partitioning operations
-- Learned how to calculate running totals and moving averages
-- Understood customer and employee sales analysis
-- Learned how Common Table Expressions simplify complex queries
-- Practiced recursive SQL queries
-- Improved SQL problem-solving and reporting skills
-- Gained practical experience with business reporting queries
-
----
-
-# Sample Queries Practiced
-
-## Ranking Functions
-- Assign row numbers to employees by salary
-- Rank employees based on salary
-- Find second-highest salary in each department
-
-## Window Functions
-- Running total of order amounts
-- Cumulative sales per employee
-- Moving average of orders
-- Salary percentage contribution
-
-## LAG & LEAD
-- Previous order amount
-- Next order amount
-- Difference between current and previous order
-
-## CTE Queries
-- Employee sales reports
-- Customer spending rankings
-- Orders above average amount
-
-## Recursive Queries
-- Generate numbers from 1 to 10
-
-## Business Reports
-- Monthly sales trends
-- Department payroll calculations
-- Top-performing employees by department
+- Learned how SQL Window Functions work
+- Understood row-based analytical calculations
+- Practiced employee salary ranking
+- Learned cumulative calculations using SQL
+- Understood customer order comparisons
+- Improved SQL analytical querying skills
 
 ---
 
 # Challenges Faced
 
-Initially, understanding analytical SQL concepts such as Window Functions, PARTITION BY, and ranking operations was slightly challenging. Another difficulty was handling compatibility issues because older MySQL versions do not support advanced features like window functions and recursive CTEs. After practicing multiple examples and understanding alternative approaches using subqueries and variables, the concepts became much clearer.
+Initially, understanding how Window Functions operate across partitions and ordered datasets was slightly challenging. After practicing multiple examples and observing outputs carefully, the concepts became much easier to understand.
 
 ---
 
 # Conclusion
 
-Successfully completed Week 1 - Day 5 advanced SQL practice tasks and developed a strong understanding of analytical SQL concepts. This session significantly improved practical SQL querying skills and built a strong foundation for advanced database querying, reporting systems, data analytics, and data engineering workflows.
+Successfully completed Week 1 - Day 5 tasks and developed a strong understanding of SQL Window Functions, ranking operations, and analytical calculations.
