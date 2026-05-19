@@ -2,36 +2,43 @@
 -- 1. ROW_NUMBER by salary
 -- =====================================================
 
+SET @row_num = 0;
+
 SELECT employee_name,
        salary,
-       ROW_NUMBER() OVER(
-       ORDER BY salary DESC
-       ) AS row_num
-FROM employees;
+       (@row_num := @row_num + 1) AS row_num
+FROM employees
+ORDER BY salary DESC;
 
 
 -- =====================================================
 -- 2. RANK by salary
 -- =====================================================
 
-SELECT employee_name,
-       salary,
-       RANK() OVER(
-       ORDER BY salary DESC
-       ) AS rank_num
-FROM employees;
+SELECT e1.employee_name,
+       e1.salary,
+       (
+           SELECT COUNT(DISTINCT e2.salary)
+           FROM employees e2
+           WHERE e2.salary > e1.salary
+       ) + 1 AS rank_num
+FROM employees e1
+ORDER BY salary DESC;
 
 
 -- =====================================================
 -- 3. DENSE_RANK by salary
 -- =====================================================
 
-SELECT employee_name,
-       salary,
-       DENSE_RANK() OVER(
-       ORDER BY salary DESC
-       ) AS dense_rank_num
-FROM employees;
+SELECT e1.employee_name,
+       e1.salary,
+       (
+           SELECT COUNT(DISTINCT e2.salary)
+           FROM employees e2
+           WHERE e2.salary > e1.salary
+       ) + 1 AS dense_rank_num
+FROM employees e1
+ORDER BY salary DESC;
 
 
 -- =====================================================
