@@ -1,3 +1,10 @@
+# Week 2 - Day 4
+
+## Objective
+
+The objective of this session was to understand and practice NULL handling functions in MySQL using real-world business scenarios. The session focused on handling missing data, replacing NULL values, preventing calculation errors, and implementing conditional fallback logic using various NULL functions
+
+
 # NULL FUNCTIONS IN MYSQL
 
 This project explains NULL handling functions in MySQL using practical business examples.
