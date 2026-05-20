@@ -1,5 +1,5 @@
 # QUERIES
-
+  
 ```sql
 -- =========================================
 -- REGEX FOUNDATION QUERIES
