@@ -1,4 +1,5 @@
-# DAY 7 – NULL FUNCTIONS & STRING FUNCTIONS IN MYSQL
+# Week 2 - Day 7
+# NULL FUNCTIONS & STRING FUNCTIONS IN MYSQL
 
 This project combines practical examples of:
 
