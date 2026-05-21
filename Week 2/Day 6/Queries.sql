@@ -1,6 +1,3 @@
-# QUERIES
-  
-```sql
 -- =========================================
 -- REGEX FOUNDATION QUERIES
 -- =========================================
@@ -34,7 +31,7 @@ SELECT '123abc' REGEXP '[0-9]$' AS ends_with_digit;
 SELECT 'abc123' REGEXP '[0-9]$' AS ends_with_digit;
 
 -- =========================================
--- 5. Extract Exact Characters Using {}
+-- 5. Exact Characters Using {}
 -- =========================================
 
 SELECT '12345678abc' REGEXP '[0-9]{2}' AS exact_two_digits;
@@ -167,9 +164,6 @@ SELECT
 REGEXP '^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+\\.[a-zA-Z]{2,3}$'
 AS final_email_validation;
 
-
-
-
 -- =========================================
 -- FLIPKART RAW DATA ANALYSIS
 -- =========================================
@@ -222,4 +216,3 @@ COUNT(DISTINCT order_date) AS different_dates
 FROM flipkart_raw_data
 GROUP BY order_id
 HAVING COUNT(DISTINCT order_date) > 1;
-```
