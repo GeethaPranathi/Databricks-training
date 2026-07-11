@@ -1,4 +1,4 @@
-# SQL to PySpark Phase 2 – SQL to PySpark Bridge Pack
+# SQL to PySpark Phase 2 
 
 ## Overview
 
