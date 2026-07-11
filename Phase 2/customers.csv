@@ -1,0 +1,8 @@
+customer_id,first_name,last_name,email,city
+1,John,Smith,john@domain.com,Springfield
+2,Emma,Jones,emma@webmail.com,Centerville
+3,Olivia,Brown,olivia@outlook.com,Greenville
+4,Liam,Johnson,liam@gmail.com,Riverside
+5,Noah,Williams,noah@yahoo.com,Lakeside
+6,Alice,Miller,alice@aol.com,Oakland
+,Invalid,User,invalid@aol.com,Nowhere
